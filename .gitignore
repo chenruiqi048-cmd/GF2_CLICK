@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+.env
+
+# PyInstaller
+build/
+dist/
+*.spec
+*.manifest
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 本地锁定/临时文件（保留 calib 下的 points.json）
+calib/.capture_points.lock
