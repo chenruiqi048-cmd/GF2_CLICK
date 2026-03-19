@@ -29,6 +29,7 @@ exe = EXE(
     [],
     name='GF2_Click_Helper',
     debug=False,
+    uac_admin=True,  # 请求管理员权限，可点击以管理员运行的游戏
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,

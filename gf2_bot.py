@@ -68,6 +68,9 @@ ROI_HEIGHT = 200
 # 通过窗口标题关键字锁定游戏窗口（进程捕获的实用替代）
 WINDOW_TITLE_KEYWORDS = ["少女前线2", "GF2_Exilium"]
 
+# 坐标缩放：标定时的 DPI 缩放 / 运行时的 DPI 缩放。标定 150%、运行 100% 时填 1.5；相同则填 1.0
+COORD_SCALE = 1.5
+
 # 对局部截图或易变图标可单独放宽阈值
 PER_TEMPLATE_THRESHOLD = {
     "温度1": 0.70,
@@ -346,17 +349,32 @@ def resolve_offset(
 
 
 def build_target_points(
-    calib_points: Dict[str, Point], offset_x: int, offset_y: int
+    calib_points: Dict[str, Point],
+    offset_x: int,
+    offset_y: int,
+    anchor_pt: Optional[Point],
+    scale: float = 1.0,
 ) -> Dict[str, Tuple[int, int]]:
+    """相对窗口左上角等比例缩放：target = 窗口左上 + (点 - 锚点) * scale"""
+    if anchor_pt is None:
+        anchor_pt = Point("", 0, 0)
     targets: Dict[str, Tuple[int, int]] = {}
+    frame_left = offset_x + anchor_pt.abs_x
+    frame_top = offset_y + anchor_pt.abs_y
     for name, p in calib_points.items():
-        targets[normalize_name(name)] = (p.abs_x + offset_x, p.abs_y + offset_y)
+        rel_x = (p.abs_x - anchor_pt.abs_x) * scale
+        rel_y = (p.abs_y - anchor_pt.abs_y) * scale
+        targets[normalize_name(name)] = (
+            int(frame_left + rel_x),
+            int(frame_top + rel_y),
+        )
     return targets
 
 
 def run_bot(
     stop_event: "object",
     log: Callable[[str], None] = print,
+    coord_scale: float | None = None,
 ) -> None:
     """主循环，支持通过 stop_event 停止，log 用于输出日志。"""
     log("GF2 点击脚本启动中...")
@@ -403,7 +421,13 @@ def run_bot(
             use_window_topleft_anchor=bool(area and USE_WINDOW_TOPLEFT_AS_ANCHOR),
             log=log,
         )
-        target_points = build_target_points(calib_points, offset_x, offset_y)
+        anchor_pt = calib_points.get("锚点1")
+        scale = coord_scale if coord_scale is not None else COORD_SCALE
+        target_points = build_target_points(
+            calib_points, offset_x, offset_y, anchor_pt, scale
+        )
+        if scale != 1.0:
+            log(f"已启用坐标缩放: COORD_SCALE={scale}")
 
         active_templates = [
             t

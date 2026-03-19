@@ -2,13 +2,16 @@
 """
 GF2 自动点击助手 - GUI 版本
 双击运行或通过 PyInstaller 打包的 exe 启动。
+需以管理员身份运行方可点击以管理员运行的游戏窗口。
 """
 from __future__ import annotations
 
+import ctypes
+import sys
 import queue
 import threading
 import tkinter as tk
-from tkinter import scrolledtext, font as tkfont
+from tkinter import scrolledtext, font as tkfont, ttk
 # 导入核心逻辑（确保在项目根目录或已安装）
 try:
     from gf2_bot import run_bot
@@ -73,6 +76,15 @@ class GF2ClickApp:
         self.status_var = tk.StringVar(value="状态: 就绪")
         tk.Label(btn_frame, textvariable=self.status_var, fg="#666").pack(side=tk.LEFT, padx=(20, 0))
 
+        # 屏幕缩放选项：100% -> COORD_SCALE=1.5，150% -> COORD_SCALE=1.0
+        tk.Label(btn_frame, text="屏幕缩放:", fg="#666").pack(side=tk.LEFT, padx=(20, 4))
+        self.scale_var = tk.StringVar(value="150%")
+        self.scale_combo = ttk.Combobox(
+            btn_frame, textvariable=self.scale_var,
+            values=["100%", "150%"], state="readonly", width=6
+        )
+        self.scale_combo.pack(side=tk.LEFT)
+
         # 日志区
         log_label = tk.Label(self.root, text="运行日志:", anchor=tk.W)
         log_label.pack(fill=tk.X, padx=10, pady=(10, 2))
@@ -90,6 +102,9 @@ class GF2ClickApp:
     def _log(self, msg: str) -> None:
         self.log_queue.put(msg)
 
+    def _get_coord_scale(self) -> float:
+        return 1.5 if self.scale_var.get() == "100%" else 1.0
+
     def _on_start(self) -> None:
         if self.is_running:
             return
@@ -97,11 +112,14 @@ class GF2ClickApp:
         self.stop_event.clear()
         self.btn_start.config(state=tk.DISABLED)
         self.btn_stop.config(state=tk.NORMAL)
+        self.scale_combo.config(state=tk.DISABLED)
         self.status_var.set("状态: 运行中")
+
+        coord_scale = self._get_coord_scale()
 
         def worker() -> None:
             try:
-                run_bot(stop_event=self.stop_event, log=self._log)
+                run_bot(stop_event=self.stop_event, log=self._log, coord_scale=coord_scale)
             except Exception as e:
                 self._log(f"运行失败: {e}")
             finally:
@@ -121,6 +139,7 @@ class GF2ClickApp:
         self.is_running = False
         self.btn_start.config(state=tk.NORMAL)
         self.btn_stop.config(state=tk.DISABLED)
+        self.scale_combo.config(state="readonly")
         self.status_var.set("状态: 已停止")
 
     def _start_log_poll(self) -> None:
@@ -162,5 +181,25 @@ def main() -> None:
     app.run()
 
 
+def _request_admin_and_rerun() -> bool:
+    """若当前非管理员，请求提升后重新启动；返回 True 表示已重新启动，调用者应退出。"""
+    try:
+        if ctypes.windll.shell32.IsUserAnAdmin():
+            return False
+    except Exception:
+        return False
+    # 以管理员身份重新启动
+    if getattr(sys, "frozen", False):
+        params = ""
+    else:
+        params = " ".join(f'"{a}"' if " " in a else a for a in sys.argv)
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", sys.executable, params, None, 1
+    )
+    return True
+
+
 if __name__ == "__main__":
+    if _request_admin_and_rerun():
+        sys.exit(0)
     main()
