@@ -40,12 +40,14 @@ ACTIVE_POINT_NAMES = {
     "浮沫1",
     "浮沫2",
     "咖啡1",
+    "黄油1",
     "锚点1",
 }
 
 # 命中主按钮后，自动补充一次
 AUTO_REPLENISH = {
     "坚果1": "补充坚果1",
+    "黄油1": "补充黄油1",
     "水果1": "补充水果1",
     "水果2": "补充水果2",
     "水果3": "补充水果3",
@@ -68,7 +70,7 @@ SUBMIT_POST_WAIT_SEC = 1.0
 
 # 运行模式（由 GUI 传入）
 RUN_MODE_NORMAL = "normal"
-RUN_MODE_INFINITE_MATERIAL = "infinite_material"  # 不点击任何「补充*」
+RUN_MODE_INFINITE_MATERIAL = "infinite_material"  # 不点击任何「补充*」（含补充黄油1）
 RUN_MODE_NO_CAT = "no_cat"  # 每次补充后额外等待（给猫动画等）
 NO_CAT_REPLENISH_WAIT_SEC = 3.0
 
@@ -393,12 +395,29 @@ def build_target_points(
     return targets
 
 
+def apply_point_gui_adjust(
+    targets: Dict[str, Tuple[int, int]],
+    point_name: str,
+    adj_x: int,
+    adj_y: int,
+) -> None:
+    """在 build_target_points 结果上叠加微调；与 anchor_offset 同向（x 正右，y 正上）。"""
+    k = normalize_name(point_name)
+    if k not in targets:
+        return
+    if adj_x == 0 and adj_y == 0:
+        return
+    x, y = targets[k]
+    targets[k] = (x + adj_x, y - adj_y)
+
+
 def run_bot(
     stop_event: "object",
     log: Callable[[str], None] = print,
     coord_scale: float | None = None,
     anchor_offset: Tuple[int, int] = (0, 0),
     run_mode: str = RUN_MODE_NORMAL,
+    purple_fruit_gui_adjust: Tuple[int, int] = (0, 0),
 ) -> None:
     """主循环，支持通过 stop_event 停止，log 用于输出日志。"""
     if run_mode not in {
@@ -409,7 +428,7 @@ def run_bot(
         run_mode = RUN_MODE_NORMAL
     mode_desc = {
         RUN_MODE_NORMAL: "普通（主配料 + 自动补充）",
-        RUN_MODE_INFINITE_MATERIAL: "无限材料（不点补充）",
+        RUN_MODE_INFINITE_MATERIAL: "无限材料（不点任何补充）",
         RUN_MODE_NO_CAT: f"无猫（补充后等待 {NO_CAT_REPLENISH_WAIT_SEC:.0f}s）",
     }.get(run_mode, run_mode)
     log("GF2 点击脚本启动中...")
@@ -466,6 +485,12 @@ def run_bot(
             log(f"已启用坐标缩放: COORD_SCALE={scale}")
         if anchor_offset != (0, 0):
             log(f"已启用锚点修正: x={anchor_offset[0]}, y={anchor_offset[1]}")
+
+        pfx, pfy = purple_fruit_gui_adjust
+        apply_point_gui_adjust(target_points, "水果4", pfx, pfy)
+        apply_point_gui_adjust(target_points, "补充水果4", pfx, pfy)
+        if pfx != 0 or pfy != 0:
+            log(f"紫色水果整体微调: ({pfx},{pfy})")
 
         active_templates = [
             t

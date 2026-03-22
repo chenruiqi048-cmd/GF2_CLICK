@@ -55,9 +55,9 @@ class GF2ClickApp:
     def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("GF2 自动点击助手")
-        self.root.geometry("520x420")
+        self.root.geometry("640x500")
         self.root.resizable(True, True)
-        self.root.minsize(400, 320)
+        self.root.minsize(520, 380)
 
         self.stop_event = threading.Event()
         self.bot_thread: threading.Thread | None = None
@@ -135,12 +135,16 @@ class GF2ClickApp:
             *RUN_MODE_DISPLAY_TO_KEY.keys(),
         )
         self.run_mode_menu.pack(side=tk.LEFT)
+
+        mode_hint = tk.Frame(self.root, padx=10)
+        mode_hint.pack(fill=tk.X)
         tk.Label(
-            mode_frame,
-            text="  普通=主配料+补充；无限材料=不点补充；无猫=补充后多等 3s",
+            mode_hint,
+            text="说明：普通=主配料+补充；无限材料=不点任何补充；无猫=补充后多等 3s",
             fg="#999",
             font=("", 8),
-        ).pack(side=tk.LEFT, padx=(8, 0))
+            anchor=tk.W,
+        ).pack(fill=tk.X)
 
         # 锚点修正：与 gf2_bot.build_target_points 一致，x 正=落点右移，y 正=落点上移（像素）
         opt_frame = tk.Frame(self.root, padx=10, pady=4)
@@ -160,13 +164,47 @@ class GF2ClickApp:
             font=("", 8),
         ).pack(side=tk.LEFT, padx=(8, 0))
 
+        fruit_frame = tk.LabelFrame(
+            self.root,
+            text="紫色水果位置调整（叠加在标定坐标上）",
+            padx=8,
+            pady=6,
+        )
+        fruit_frame.pack(fill=tk.X, padx=10, pady=4)
+        fr_hint = tk.Label(
+            fruit_frame,
+            text="主位与补充同一偏移；与锚点修正同向：x 正=右移，y 正=上移；默认 0,0",
+            fg="#999",
+            font=("", 8),
+            anchor=tk.W,
+        )
+        fr_hint.pack(fill=tk.X, pady=(0, 4))
+
+        fr_row = tk.Frame(fruit_frame)
+        fr_row.pack(fill=tk.X)
+        tk.Label(fr_row, text="整体", width=6, anchor=tk.W, fg="#555").pack(
+            side=tk.LEFT
+        )
+        tk.Label(fr_row, text="x:", fg="#666").pack(side=tk.LEFT, padx=(4, 2))
+        self.purple_fruit_adj_x_var = tk.StringVar(value="0")
+        self.purple_fruit_adj_x_entry = tk.Entry(
+            fr_row, textvariable=self.purple_fruit_adj_x_var, width=6
+        )
+        self.purple_fruit_adj_x_entry.pack(side=tk.LEFT, padx=(0, 10))
+        tk.Label(fr_row, text="y:", fg="#666").pack(side=tk.LEFT, padx=(0, 2))
+        self.purple_fruit_adj_y_var = tk.StringVar(value="0")
+        self.purple_fruit_adj_y_entry = tk.Entry(
+            fr_row, textvariable=self.purple_fruit_adj_y_var, width=6
+        )
+        self.purple_fruit_adj_y_entry.pack(side=tk.LEFT)
+
         # 日志区
         log_label = tk.Label(self.root, text="运行日志:", anchor=tk.W)
         log_label.pack(fill=tk.X, padx=10, pady=(10, 2))
         self.log_text = scrolledtext.ScrolledText(
             self.root,
             wrap=tk.WORD,
-            height=16,
+            height=14,
             font=("Consolas", 9),
             state=tk.DISABLED,
             bg="#f8f8f8",
@@ -207,6 +245,17 @@ class GF2ClickApp:
     def _get_run_mode_key(self) -> str:
         label = self.run_mode_display.get().strip()
         return RUN_MODE_DISPLAY_TO_KEY.get(label, RUN_MODE_NORMAL)
+
+    def _get_purple_fruit_gui_adjust(self) -> tuple[int, int]:
+        try:
+            x = int(self.purple_fruit_adj_x_var.get().strip() or "0")
+        except ValueError:
+            x = 0
+        try:
+            y = int(self.purple_fruit_adj_y_var.get().strip() or "0")
+        except ValueError:
+            y = 0
+        return (x, y)
 
     def _on_force_window(self) -> None:
         """将游戏窗口客户区强制为标定尺寸（与 force_client_window 默认一致）。"""
@@ -265,10 +314,13 @@ class GF2ClickApp:
         self.anchor_offset_x_entry.config(state=tk.DISABLED)
         self.anchor_offset_y_entry.config(state=tk.DISABLED)
         self.run_mode_menu.config(state=tk.DISABLED)
+        for w in (self.purple_fruit_adj_x_entry, self.purple_fruit_adj_y_entry):
+            w.config(state=tk.DISABLED)
         self.status_var.set("状态: 运行中")
 
         anchor_offset_x, anchor_offset_y = self._get_anchor_offset()
         run_mode_key = self._get_run_mode_key()
+        purple_adj = self._get_purple_fruit_gui_adjust()
 
         def worker() -> None:
             try:
@@ -277,6 +329,7 @@ class GF2ClickApp:
                     log=self._log,
                     anchor_offset=(anchor_offset_x, anchor_offset_y),
                     run_mode=run_mode_key,
+                    purple_fruit_gui_adjust=purple_adj,
                 )
             except Exception as e:
                 self._log(f"运行失败: {e}")
@@ -300,6 +353,8 @@ class GF2ClickApp:
         self.anchor_offset_x_entry.config(state=tk.NORMAL)
         self.anchor_offset_y_entry.config(state=tk.NORMAL)
         self.run_mode_menu.config(state=tk.NORMAL)
+        for w in (self.purple_fruit_adj_x_entry, self.purple_fruit_adj_y_entry):
+            w.config(state=tk.NORMAL)
         self.status_var.set("状态: 已停止")
 
     def _start_log_poll(self) -> None:
