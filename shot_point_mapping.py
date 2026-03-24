@@ -29,6 +29,7 @@ EXPLICIT_SHOTS: dict[str, str] = {
     "水果4.png": "水果4",
     "浮沫2.png": "浮沫2",
     "黄油1.png": "黄油1",
+    "饮料4.png": "饮料4",
 }
 
 

@@ -150,16 +150,16 @@ class GF2ClickApp:
         opt_frame = tk.Frame(self.root, padx=10, pady=4)
         opt_frame.pack(fill=tk.X)
         tk.Label(opt_frame, text="锚点修正 x:", fg="#666").pack(side=tk.LEFT, padx=(0, 2))
-        self.anchor_offset_x_var = tk.StringVar(value="25")
+        self.anchor_offset_x_var = tk.StringVar(value="0")
         self.anchor_offset_x_entry = tk.Entry(opt_frame, textvariable=self.anchor_offset_x_var, width=5)
         self.anchor_offset_x_entry.pack(side=tk.LEFT, padx=(0, 12))
         tk.Label(opt_frame, text="y:", fg="#666").pack(side=tk.LEFT, padx=(0, 2))
-        self.anchor_offset_y_var = tk.StringVar(value="-5")
+        self.anchor_offset_y_var = tk.StringVar(value="0")
         self.anchor_offset_y_entry = tk.Entry(opt_frame, textvariable=self.anchor_offset_y_var, width=5)
         self.anchor_offset_y_entry.pack(side=tk.LEFT)
         tk.Label(
             opt_frame,
-            text="  (x 正=右移，y 正=上移、负=下移；默认 25,-5)",
+            text="  (x 正=右移，y 正=上移、负=下移；默认 0,0)",
             fg="#999",
             font=("", 8),
         ).pack(side=tk.LEFT, padx=(8, 0))

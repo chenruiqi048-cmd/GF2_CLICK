@@ -73,7 +73,12 @@ if __name__ == "__main__":
     listener = mouse.Listener(on_click=on_click)
     listener.start()
     try:
-        listener.join()
+        # 勿用 listener.join() 阻塞主线程：Windows 上 Ctrl+C 往往无法打断 join
+        while listener.running:
+            time.sleep(0.15)
     except KeyboardInterrupt:
+        pass
+    finally:
         listener.stop()
-        print("已退出。")
+        listener.join(timeout=3.0)
+    print("已退出。")

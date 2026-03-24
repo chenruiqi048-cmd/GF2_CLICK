@@ -55,11 +55,15 @@ def main() -> None:
     listener = mouse.Listener(on_click=on_click)
     listener.start()
     try:
-        listener.join()
+        while listener.running:
+            time.sleep(0.15)
     except KeyboardInterrupt:
+        pass
+    finally:
         listener.stop()
-        print(f"已退出，共记录 {count} 个坐标。")
-        print(f"结果保存在：{CSV_PATH}")
+        listener.join(timeout=3.0)
+    print(f"已退出，共记录 {count} 个坐标。")
+    print(f"结果保存在：{CSV_PATH}")
 
 
 if __name__ == "__main__":

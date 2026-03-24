@@ -1,8 +1,8 @@
 {
   "anchor": {
     "name": "锚点1",
-    "abs_x": 478,
-    "abs_y": 241,
+    "abs_x": 450,
+    "abs_y": 250,
     "rel_dx": null,
     "rel_dy": null,
     "captured_at": "2026-03-19T15:22:44"
@@ -26,19 +26,19 @@
     },
     {
       "name": "黄油1",
-      "abs_x": 818,
-      "abs_y": 811,
-      "rel_dx": 340,
-      "rel_dy": 570,
-      "captured_at": "2026-03-22T00:00:00"
+      "abs_x": 795,
+      "abs_y": 790,
+      "rel_dx": 345,
+      "rel_dy": 540,
+      "captured_at": "2026-03-24T00:00:00"
     },
     {
       "name": "补充黄油1",
-      "abs_x": 748,
-      "abs_y": 781,
-      "rel_dx": 270,
-      "rel_dy": 540,
-      "captured_at": "2026-03-22T00:00:00"
+      "abs_x": 725,
+      "abs_y": 750,
+      "rel_dx": 275,
+      "rel_dy": 500,
+      "captured_at": "2026-03-24T00:00:00"
     },
     {
       "name": "椰果1",
@@ -99,19 +99,19 @@
     },
     {
       "name": "水果4",
-      "abs_x": 1128,
-      "abs_y": 1050,
+      "abs_x": 1100,
+      "abs_y": 1030,
       "rel_dx": 650,
-      "rel_dy": 809,
-      "captured_at": "2026-03-21T00:00:00"
+      "rel_dy": 780,
+      "captured_at": "2026-03-24T00:00:00"
     },
     {
       "name": "补充水果4",
-      "abs_x": 1121,
-      "abs_y": 1145,
-      "rel_dx": 643,
-      "rel_dy": 904,
-      "captured_at": "2026-03-21T00:00:00"
+      "abs_x": 1100,
+      "abs_y": 1130,
+      "rel_dx": 650,
+      "rel_dy": 880,
+      "captured_at": "2026-03-24T00:00:00"
     },
     {
       "name": "小食1",
@@ -208,6 +208,22 @@
       "rel_dx": 1347,
       "rel_dy": 889,
       "captured_at": "2026-03-19T15:23:32"
+    },
+    {
+      "name": "饮料4",
+      "abs_x": 1695,
+      "abs_y": 1010,
+      "rel_dx": 1245,
+      "rel_dy": 760,
+      "captured_at": "2026-03-25T00:00:00"
+    },
+    {
+      "name": "补充饮料4",
+      "abs_x": 1695,
+      "abs_y": 1125,
+      "rel_dx": 1245,
+      "rel_dy": 875,
+      "captured_at": "2026-03-25T00:00:00"
     },
     {
       "name": "浮沫1",
